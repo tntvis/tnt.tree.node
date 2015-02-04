@@ -198,6 +198,21 @@ describe ('TnT node', function () {
 	    })
 	});
 
+	describe('find_all', function () {
+	    var newtree = newick.parse_newick("((human,chimp)anc1,human)anc2");
+	    var mynewtree = tnt_node(newtree);
+	    it ("Exists", function () {
+		assert.isDefined(mynewtree);
+		assert.isDefined(mynewtree.find_all);
+	    });
+	    it ("returns all the nodes satisfying the argument", function () {
+		var nodes = mynewtree.find_all(function (node) {
+		    return node.node_name() === "human";
+		});
+		assert.equal (nodes.length, 2);
+	    });
+	});
+	
 	describe('apply', function () {
 	    it("Sets a new property on each downstream node", function () {
 		mytree.apply(function (node) {node.property('__test__', 1)})
@@ -489,6 +504,25 @@ describe ('TnT node', function () {
 	    });
 
 	});
+
+	describe('flatten', function () {
+	    it ("exists", function () {
+		assert.isDefined(mytree.flatten);
+		assert.isFunction(mytree.flatten);
+	    });
+	    it ("flattens the root of a tree", function () {
+		var flattened = mytree.flatten();
+		assert.isDefined(flattened);
+		assert.equal(flattened.get_all_leaves().length, 3);
+	    });
+	    it ("returns a single node without children on flattening leaves", function () {
+		var human = mytree.find_node_by_name("human");
+		assert.isDefined (human);
+		var f = human.flatten();
+		assert.isUndefined(f.data().children);
+	    });
+	});
+
 
     });
 

@@ -91,6 +91,16 @@ var tnt_node = function (data) {
     // We bind the data that has been passed
     node.data(data);
 
+    api.method ('find_all', function (cbak, deep) {
+	var nodes = [];
+	node.apply (function (n) {
+	    if (cbak(n)) {
+		nodes.push (n);
+	    }
+	});
+	return nodes;
+    });
+    
     api.method ('find_node', function (cbak, deep) {
 	if (cbak(node)) {
 	    return node;
@@ -256,50 +266,6 @@ var tnt_node = function (data) {
 	    return n_children === 1;
 	};
 
-	var copy_data = function (orig_data, subtree, condition) {
-            if (orig_data === undefined) {
-		return;
-            }
-
-            if (condition(orig_data)) {
-		var copy = copy_node(orig_data);
-		if (subtree.children === undefined) {
-                    subtree.children = [];
-		}
-		subtree.children.push(copy);
-		if (orig_data.children === undefined) {
-                    return;
-		}
-		for (var i = 0; i < orig_data.children.length; i++) {
-                    copy_data (orig_data.children[i], copy, condition);
-		}
-            } else {
-		if (orig_data.children === undefined) {
-                    return;
-		}
-		for (var i = 0; i < orig_data.children.length; i++) {
-                    copy_data(orig_data.children[i], subtree, condition);
-		}
-            }
-	};
-
-	var copy_node = function (node_data) {
-	    var copy = {};
-	    // copy all the own properties excepts links to other nodes or depth
-	    for (var param in node_data) {
-		if ((param === "children") ||
-		    (param === "children") ||
-		    (param === "_parent") ||
-		    (param === "depth")) {
-		    continue;
-		}
-		if (node_data.hasOwnProperty(param)) {
-		    copy[param] = node_data[param];
-		}
-	    }
-	    return copy;
-	};
-
 	var subtree = {};
 	copy_data (data, subtree, function (node_data) {
 	    var node_id = node_data._id;
@@ -323,6 +289,51 @@ var tnt_node = function (data) {
 	return tnt_node(subtree.children[0]);
     });
 
+    var copy_data = function (orig_data, subtree, condition) {
+        if (orig_data === undefined) {
+	    return;
+        }
+
+        if (condition(orig_data)) {
+	    var copy = copy_node(orig_data);
+	    if (subtree.children === undefined) {
+                subtree.children = [];
+	    }
+	    subtree.children.push(copy);
+	    if (orig_data.children === undefined) {
+                return;
+	    }
+	    for (var i = 0; i < orig_data.children.length; i++) {
+                copy_data (orig_data.children[i], copy, condition);
+	    }
+        } else {
+	    if (orig_data.children === undefined) {
+                return;
+	    }
+	    for (var i = 0; i < orig_data.children.length; i++) {
+                copy_data(orig_data.children[i], subtree, condition);
+	    }
+        }
+    };
+
+    var copy_node = function (node_data) {
+	var copy = {};
+	// copy all the own properties excepts links to other nodes or depth
+	for (var param in node_data) {
+	    if ((param === "children") ||
+		(param === "_children") ||
+		(param === "_parent") ||
+		(param === "depth")) {
+		continue;
+	    }
+	    if (node_data.hasOwnProperty(param)) {
+		copy[param] = node_data[param];
+	    }
+	}
+	return copy;
+    };
+
+    
     // TODO: This method visits all the nodes
     // a more performant version should return true
     // the first time cbak(node) is true
@@ -361,6 +372,22 @@ var tnt_node = function (data) {
 	}
     });
 
+    api.method ('flatten', function () {
+	if (node.is_leaf()) {
+	    return node;
+	}
+	var data = node.data();
+	var newroot = copy_node(data);
+	var leaves = node.get_all_leaves();
+	newroot.children = [];
+	for (var i=0; i<leaves.length; i++) {
+	    newroot.children.push(copy_node(leaves[i].data()));
+	}
+
+	return tnt_node(newroot);
+    });
+
+    
     // TODO: This method only 'apply's to non collapsed nodes (ie ._children is not visited)
     // Would it be better to have an extra flag (true/false) to visit also collapsed nodes?
     api.method ('apply', function(cbak) {

@@ -1,6 +1,6 @@
 {
   "name": "tnt.tree.node",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Tree data manipulation for TnT",
   "main": "index.js",
   "directories": {
