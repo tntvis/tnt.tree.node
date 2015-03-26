@@ -1,1 +1,2 @@
-module.exports = require("./src/node.js");
+var node = require("./src/node.js");
+module.exports = exports = node;
