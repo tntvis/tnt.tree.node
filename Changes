@@ -3,3 +3,4 @@
 
 0.0.3
 	- Added an option to keep singletons (nodes with one child) in subtree
+	- Bugfix: subtree recalculates branch lengths
