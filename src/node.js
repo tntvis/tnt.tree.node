@@ -236,7 +236,10 @@ var tnt_node = function (data) {
 // 	node.upstream(node._parent, cbak);
     });
 
-    api.method ('subtree', function(nodes) {
+    api.method ('subtree', function(nodes, keep_singletons) {
+	if (keep_singletons === undefined) {
+	    keep_singletons = false;
+	}
     	var node_counts = {};
     	for (var i=0; i<nodes.length; i++) {
 	    var n = nodes[i];
@@ -251,7 +254,6 @@ var tnt_node = function (data) {
 	    }
     	}
     
-
 	var is_singleton = function (node_data) {
 	    var n_children = 0;
 	    if (node_data.children === undefined) {
@@ -270,19 +272,15 @@ var tnt_node = function (data) {
 	copy_data (data, subtree, function (node_data) {
 	    var node_id = node_data._id;
 	    var counts = node_counts[node_id];
-
-	    if (counts === undefined) {
-	    	return false;
-	    }
-// 	    if ((node.children !== undefined) && (node.children.length < 2)) {
-// 		return false;
-// 	    }
-	    if ((counts > 1) && (!is_singleton(node_data))) {
+	    
+	    // Is in path
+	    if (counts > 0) {
+		if (is_singleton(node_data) && !keep_singletons) {
+		    return false; 
+		}
 		return true;
 	    }
-	    if ((counts > 0) && (node_data.children === undefined)) {
-		return true;
-	    }
+	    // Is not in path
 	    return false;
 	});
 

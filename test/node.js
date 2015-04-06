@@ -397,6 +397,54 @@ describe ('TnT node', function () {
 		assert.isTrue(_.contains(ids_in_subtree, 4));
 	    });
 
+	    it("Filters singleton nodes by default", function () {
+		var newickStr = "(((8,7)4,(6,5)3)2,9)1";
+		var origTree = tnt_node(newick.parse_newick(newickStr));
+		var isSingleton = function (node) {
+		    if (node.children() && node.children().length === 1) {
+			return true;
+		    }
+		    return false;
+		};
+
+		// Does not exists singletons in original tree
+		assert.strictEqual (origTree.present(isSingleton), false);
+
+		var node8 = origTree.find_node(function (n) {
+		    return n.node_name() == 8;
+		});
+		var node9 = origTree.find_node(function (n) {
+		    return n.node_name() == 9;
+		});
+
+		// Does not exists singletons in subtree by default
+		var subtree = origTree.subtree([node8, node9]);
+		assert.isDefined (subtree);
+		assert.strictEqual (subtree.present(isSingleton), false);
+	    });
+
+	    it ("Keeps singletons if asked for", function () {
+		var newickStr = "(((8,7)4,(6,5)3)2,9)1";
+		var origTree = tnt_node(newick.parse_newick(newickStr));
+		var isSingleton = function (node) {
+		    if (node.children() && node.children().length === 1) {
+			return true;
+		    }
+		    return false;
+		};
+		var node8 = origTree.find_node(function (n) {
+		    return n.node_name() == 8;
+		});
+		var node9 = origTree.find_node(function (n) {
+		    return n.node_name() == 9;
+		});
+
+		// Does exists singletons in subtree if specified in the second argument
+		var subtreeSingletons = origTree.subtree([node8, node9], true);
+		assert.isDefined(subtreeSingletons);
+		assert.strictEqual (subtreeSingletons.present(isSingleton), true);
+	    });
+
 	    it("Returns an identical copy on a subtree with all the leaves", function () {
 		var leaves = mytree.get_all_leaves();
 		var subtree = mytree.subtree(leaves);
@@ -413,7 +461,7 @@ describe ('TnT node', function () {
 	    });
 	});
 
-	describe("node_present", function () {
+	describe("present", function () {
 	    it("Returns true if node is present", function () {
 		var present = mytree.present(function (node) {
 		    return node.id() === 5;

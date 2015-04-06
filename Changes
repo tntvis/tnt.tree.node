@@ -1,2 +1,5 @@
 0.0.2
 	- Added "tnt" namespace in browserified version
+
+0.0.3
+	- Added an option to keep singletons (nodes with one child) in subtree
