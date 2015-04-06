@@ -269,7 +269,7 @@ var tnt_node = function (data) {
 	};
 
 	var subtree = {};
-	copy_data (data, subtree, function (node_data) {
+	copy_data (data, subtree, 0, function (node_data) {
 	    var node_id = node_data._id;
 	    var counts = node_counts[node_id];
 	    
@@ -287,13 +287,13 @@ var tnt_node = function (data) {
 	return tnt_node(subtree.children[0]);
     });
 
-    var copy_data = function (orig_data, subtree, condition) {
+    var copy_data = function (orig_data, subtree, currBranchLength, condition) {
         if (orig_data === undefined) {
 	    return;
         }
 
         if (condition(orig_data)) {
-	    var copy = copy_node(orig_data);
+	    var copy = copy_node(orig_data, currBranchLength);
 	    if (subtree.children === undefined) {
                 subtree.children = [];
 	    }
@@ -302,19 +302,21 @@ var tnt_node = function (data) {
                 return;
 	    }
 	    for (var i = 0; i < orig_data.children.length; i++) {
-                copy_data (orig_data.children[i], copy, condition);
+                copy_data (orig_data.children[i], copy, 0, condition);
 	    }
         } else {
 	    if (orig_data.children === undefined) {
                 return;
 	    }
+	    currBranchLength += orig_data.branch_length || 0;
+	    console.log("ACC: " + currBranchLength); 
 	    for (var i = 0; i < orig_data.children.length; i++) {
-                copy_data(orig_data.children[i], subtree, condition);
+                copy_data(orig_data.children[i], subtree, currBranchLength, condition);
 	    }
         }
     };
 
-    var copy_node = function (node_data) {
+    var copy_node = function (node_data, extraBranchLength) {
 	var copy = {};
 	// copy all the own properties excepts links to other nodes or depth
 	for (var param in node_data) {
@@ -327,6 +329,9 @@ var tnt_node = function (data) {
 	    if (node_data.hasOwnProperty(param)) {
 		copy[param] = node_data[param];
 	    }
+	}
+	if ((copy.branch_length !== undefined) && (extraBranchLength !== undefined)) {
+	    copy.branch_length += extraBranchLength;
 	}
 	return copy;
     };

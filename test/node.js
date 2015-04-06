@@ -445,6 +445,26 @@ describe ('TnT node', function () {
 		assert.strictEqual (subtreeSingletons.present(isSingleton), true);
 	    });
 
+	    it ("Recalculates branch lengths", function () {
+		var newickStr = "(((8:0.1,7:0.1)4:0.1,(6:0.1,5:0.1)3:0.1)2:0.1,9:0.1)1:0.1";
+		var origTree = tnt_node(newick.parse_newick(newickStr));
+
+		var node8 = origTree.find_node(function (n) {
+		    return n.node_name() == 8;
+		});
+		var node9 = origTree.find_node(function (n) {
+		    return n.node_name() == 9;
+		});
+
+		var subtree = origTree.subtree([node8, node9], false);
+		var newNode8 = subtree.find_node(function (n) {
+		    return n.node_name() == 8;
+		});
+		console.log(newNode8.data());
+		assert.closeTo(newNode8.property("branch_length"), 0.3, 0.00001)
+		
+	    });
+	    
 	    it("Returns an identical copy on a subtree with all the leaves", function () {
 		var leaves = mytree.get_all_leaves();
 		var subtree = mytree.subtree(leaves);
