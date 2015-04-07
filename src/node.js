@@ -107,7 +107,7 @@ var tnt_node = function (data) {
 
 	if (data.children !== undefined) {
 	    for (var j=0; j<data.children.length; j++) {
-		var found = tnt_node(data.children[j]).find_node(cbak);
+		var found = tnt_node(data.children[j]).find_node(cbak, deep);
 		if (found) {
 		    return found;
 		}
@@ -117,7 +117,7 @@ var tnt_node = function (data) {
 	if (deep && (data._children !== undefined)) {
 	    for (var i=0; i<data._children.length; i++) {
 		tnt_node(data._children[i]).find_node(cbak)
-		var found = tnt_node(data.children[j]).find_node(cbak);
+		var found = tnt_node(data.children[j]).find_node(cbak, depp);
 		if (found) {
 		    return found;
 		}
