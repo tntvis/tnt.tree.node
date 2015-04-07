@@ -5,3 +5,5 @@
 	- Added an option to keep singletons (nodes with one child) in subtree
 	- Bugfix: subtree recalculates branch lengths
 	- Bugfix: find_node now preserves "deep" argument when traversing the tree
+	- toggle now returns the same node the method applies to
+

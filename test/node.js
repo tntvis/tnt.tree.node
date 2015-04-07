@@ -273,12 +273,44 @@ describe ('TnT node', function () {
 	});
 
 	describe('toggle', function () {
-	    it ("hides nodes");
-	    it ("un-hides nodes");
+	    var newickStr = "((human, chimp)primates, (mouse, rat)rodents)mammals";
+	    it ("hides nodes", function () {
+		var root = tnt_node (newick.parse_newick(newickStr));
+		var rodents = root.find_node_by_name("rodents");
+		rodents.toggle();
+		assert.isUndefined(rodents.property("children"));
+		assert.isDefined(rodents.property("_children"));
+	    });
+	    it ("un-hides nodes", function () {
+		var root = tnt_node (newick.parse_newick(newickStr));
+		var rodents = root.find_node_by_name("rodents");
+		rodents.toggle().toggle();
+		assert.isUndefined(rodents.property("_children"));
+		assert.isDefined(rodents.property("children"));
+
+	    });
 	});
+
 	describe('is_collapsed', function () {
-	    it ("Returns true on collapsed nodes");
-	    it ("Returns false on real leaves");
+	    var newickStr = "((human, chimp)primates, (mouse, rat)rodents)mammals";
+	    var root = tnt_node (newick.parse_newick(newickStr));
+	    it ("Returns true on collapsed nodes", function () {
+		var rodents = root.find_node_by_name("rodents");
+		rodents.toggle();
+		assert.isTrue (rodents.is_collapsed());
+		rodents.toggle();
+		assert.isFalse (rodents.is_collapsed());
+	    });
+	    it ("Returns false on real leaves", function () {
+		var human = root.find_node_by_name("human");
+		assert.isFalse (human.is_collapsed());
+	    });
+	    it ("Returns false on un-collapsed nodes with collapsed ancestors", function () {
+		var mammals = root.find_node_by_name("mammals");
+		var chimp = root.find_node_by_name("chimp");
+		mammals.toggle();
+		assert.isFalse (chimp.is_collapsed());		
+	    });
 	});
 
 	describe('parent', function () {

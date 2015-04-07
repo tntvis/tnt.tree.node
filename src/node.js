@@ -148,6 +148,7 @@ var tnt_node = function (data) {
 		data._children = undefined;
 	    }
 	}
+	return this;
     });
 
     api.method ('is_collapsed', function () {
