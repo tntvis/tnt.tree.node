@@ -92,6 +92,21 @@ describe ('TnT node', function () {
 
     describe('API', function () {
 
+	describe('data', function () {
+	    // data can only be used to retrieve the data or to use new data
+	    var newick1 = "((human, chimp), mouse)root1";
+	    var newick2 = "((human, chimp), mouse)root2";
+	    var root = tnt_node (newick.parse_newick(newick1));
+	    var data1 = root.data();
+	    assert.isDefined(data1);
+	    assert.isObject(data1);
+	    assert.equal(data1.name, "root1");
+	    root.data(newick.parse_newick(newick2));
+	    var data2 = root.data();
+	    assert.equal(data2.name, "root2");
+	    
+	});
+	
 	describe('property', function () {
 	    var tree_obj = {
 	    	name: "F",
@@ -460,7 +475,6 @@ describe ('TnT node', function () {
 		var newNode8 = subtree.find_node(function (n) {
 		    return n.node_name() == 8;
 		});
-		console.log(newNode8.data());
 		assert.closeTo(newNode8.property("branch_length"), 0.3, 0.00001)
 		
 	    });

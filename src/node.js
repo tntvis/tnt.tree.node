@@ -62,7 +62,6 @@ var tnt_node = function (data) {
     };
 
     var compute_root_dists = function (data) {
-	// console.log(data);
 	apply_to_data (data, function (d) {
 	    var l;
 	    if (d._parent === undefined) {
@@ -309,7 +308,6 @@ var tnt_node = function (data) {
                 return;
 	    }
 	    currBranchLength += orig_data.branch_length || 0;
-	    console.log("ACC: " + currBranchLength); 
 	    for (var i = 0; i < orig_data.children.length; i++) {
                 copy_data(orig_data.children[i], subtree, currBranchLength, condition);
 	    }
