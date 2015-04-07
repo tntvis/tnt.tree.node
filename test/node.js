@@ -585,6 +585,27 @@ describe ('TnT node', function () {
 		assert.equal(sorted[1], 5);
 	    });
 
+	    it("Sorts 3 children", function () {
+		var newick_str = "((1,2),(6,4,5)anc)";
+		var root = tnt_node(newick.parse_newick(newick_str));
+		root.sort (function (a, b) {
+		    if (a.node_name() > b.node_name()) {
+			return 1;
+		    }
+		    if (a.node_name() < b.node_name()) {
+			return -1;
+		    }
+		    return 0;
+		});
+		assert.isDefined(root);
+		var anc = root.find_node_by_name("anc");
+		assert.isDefined(anc);
+		var anc_children = anc.children();
+		assert.equal(anc_children[0].node_name(), 4);
+		assert.equal(anc_children[1].node_name(), 5);
+		assert.equal(anc_children[2].node_name(), 6);
+	    });
+
 	    it("Sorts based on a numerical value", function () {
 		var newick_str = "(((4,2),(5,1)),3)";
 		var data = newick.parse_newick(newick_str);
