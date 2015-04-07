@@ -313,6 +313,16 @@ describe ('TnT node', function () {
 	    });
 	});
 
+	describe ('n_hidden', function () {
+	    var newickStr = "((human, chimp)primates, (mouse, rat)rodents)mammals";
+	    it ("Returns the correct number of hidden nodes under a collapsed node", function () {
+		var root = tnt_node (newick.parse_newick (newickStr));
+		var primates = root.find_node_by_name ('primates');
+		primates.toggle();
+		assert.strictEqual (primates.n_hidden(), 2);
+	    });
+	});
+
 	describe('parent', function () {
 	    var newtree = newick.parse_newick("((human,chimp)anc1,mouse)anc2");
 	    var mynewtree = tnt_node(newtree);
