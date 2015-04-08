@@ -116,8 +116,8 @@ var tnt_node = function (data) {
 
 	if (deep && (data._children !== undefined)) {
 	    for (var i=0; i<data._children.length; i++) {
-		tnt_node(data._children[i]).find_node(cbak)
-		var found = tnt_node(data.children[j]).find_node(cbak, depp);
+		tnt_node(data._children[i]).find_node(cbak, deep)
+		var found = tnt_node(data._children[i]).find_node(cbak, deep);
 		if (found) {
 		    return found;
 		}
@@ -125,10 +125,10 @@ var tnt_node = function (data) {
 	}
     });
 
-    api.method ('find_node_by_name', function(name) {
+    api.method ('find_node_by_name', function(name, deep) {
 	return node.find_node (function (node) {
 	    return node.node_name() === name
-	});
+	}, deep);
     });
 
     api.method ('toggle', function() {
@@ -208,21 +208,21 @@ var tnt_node = function (data) {
 	return node
     });
 
-    api.method ('get_all_nodes', function () {
+    api.method ('get_all_nodes', function (deep) {
 	var nodes = [];
 	node.apply(function (n) {
 	    nodes.push(n);
-	});
+	}, deep);
 	return nodes;
     });
 
-    api.method ('get_all_leaves', function () {
+    api.method ('get_all_leaves', function (deep) {
 	var leaves = [];
 	node.apply(function (n) {
-	    if (n.is_leaf()) {
+	    if (n.is_leaf(deep)) {
 		leaves.push(n);
 	    }
-	});
+	}, deep);
 	return leaves;
     });
 
@@ -392,12 +392,22 @@ var tnt_node = function (data) {
     
     // TODO: This method only 'apply's to non collapsed nodes (ie ._children is not visited)
     // Would it be better to have an extra flag (true/false) to visit also collapsed nodes?
-    api.method ('apply', function(cbak) {
+    api.method ('apply', function(cbak, deep) {
+	if (deep === undefined) {
+	    deep = false;
+	}
 	cbak(node);
 	if (data.children !== undefined) {
 	    for (var i=0; i<data.children.length; i++) {
 		var n = tnt_node(data.children[i])
-		n.apply(cbak);
+		n.apply(cbak, deep);
+	    }
+	}
+
+	if ((data._children !== undefined) && deep) {
+	    for (var j=0; j<data._children.length; j++) {
+		var n = tnt_node(data._children[j]);
+		n.apply(cbak, deep);
 	    }
 	}
     });
@@ -420,7 +430,10 @@ var tnt_node = function (data) {
 	return node;
     });
 
-    api.method ('is_leaf', function() {
+    api.method ('is_leaf', function(deep) {
+	if (deep) {
+	    return ((data.children === undefined) && (data._children === undefined));
+	}
 	return data.children === undefined;
     });
 
@@ -455,13 +468,21 @@ var tnt_node = function (data) {
 	return node.property('_root_dist');
     });
 
-    api.method ('children', function () {
-	if (data.children === undefined) {
-	    return;
-	}
+    api.method ('children', function (deep) {
 	var children = [];
-	for (var i=0; i<data.children.length; i++) {
-	    children.push(tnt_node(data.children[i]));
+
+	if (data.children) {
+	    for (var i=0; i<data.children.length; i++) {
+		children.push(tnt_node(data.children[i]));
+	    }
+	}
+	if ((data._children) && deep) {
+	    for (var j=0; j<data._children.length; j++) {
+		children.push(tnt_node(data._children[j]));
+	    }
+	}
+	if (children.length === 0) {
+	    return undefined;
 	}
 	return children;
     });

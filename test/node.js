@@ -152,18 +152,41 @@ describe ('TnT node', function () {
 		}), 'bb');
 	    });
 
+	    it ('Returs undefined for non existent properties', function () {
+		assert.isUndefined(root.property("__thisPropertyDoesNotExist__"));
+	    });
+
 	});
 
 	describe('branch_length', function () {
-	    var tree_from_newick = tnt_node(newick.parse_newick("((human:0.3, chimp:0.2):0.5,mouse:0.6):0.1"));
-	    var human = tree_from_newick.find_node_by_name("human");
-	    var branch_length = human.branch_length();
+	    it ("Returns the branch length of a node", function () {
+		var tree_from_newick = tnt_node(newick.parse_newick("((human:0.3, chimp:0.2):0.5,mouse:0.6):0.1"));
+		var human = tree_from_newick.find_node_by_name("human");
+		var branch_length = human.branch_length();
+		assert.isDefined(branch_length);
+		assert.closeTo(branch_length, 0.3, 0.0001);
+	    });
+	    it ("Returns undefined if the node does not have branch length defined", function () {
+		var tree_from_newick = tnt_node(newick.parse_newick("((human,chimp),mouse)"));
+		var human = tree_from_newick.find_node_by_name("human");
+		assert.isUndefined(human.branch_length());
+	    });
+	});
+
+	describe('root_dist', function () {
+	    it ("Returns the distance to root of a node", function () {
+		var tree_from_newick = tnt_node(newick.parse_newick("((human:0.3, chimp:0.2):0.5,mouse:0.6):0.1"));
+		var human = tree_from_newick.find_node_by_name("human");
+		var root_dist = human.root_dist();
+		assert.isDefined(root_dist);
+		assert.closeTo(root_dist, 0.8, 0.0001);
+	    })
 	});
 	
 	describe('find_node', function () {
 	    var tree_from_newick = tnt_node(newick.parse_newick("((human,chimp)anc1,mouse)anc2"));
 
-	    it ("Finds a node by name", function () {
+	    it ("Finds a node by shallow attribute", function () {
 		assert.isDefined (tree_from_newick);
 		assert.typeOf (tree_from_newick, 'function');
 
@@ -185,7 +208,16 @@ describe ('TnT node', function () {
 		assert.strictEqual(n.data().id.accession, "ENSGACG00000003104");
 	    });
 
-	    it ("Finds nodes under collapsed nodes");
+	    it ("Finds nodes under collapsed nodes if deep argument is true", function () {
+		var newick_str = "((human, chimp)anc1, mouse)anc2";
+		var root = tnt_node(newick.parse_newick(newick_str));
+		root.toggle();
+		var human = root.find_node (function (n) {
+		    //return true;
+		    return n.node_name() === "human";
+		}, true); // deep
+		assert.isDefined(human);
+	    });
 	});
 
 	describe('find_node_by_name', function () {
@@ -200,17 +232,28 @@ describe ('TnT node', function () {
 		var node2 = mytree.find_node_by_name("mouse");
 		assert.isDefined(node2);
 		assert.strictEqual(node2.data().name, "mouse");
-	    })
+	    });
+	    
 	    it("Can search for the root", function () {
 		assert.isDefined(mynewtree);
 		var root = mynewtree.find_node_by_name("anc2");
 		assert.isDefined(root);
 		assert.strictEqual(root.data().name, "anc2");
-	    })
+	    });
+	    
 	    it("Returns nodes that are tnt.tree.node's", function () {
 		var node = mynewtree.find_node_by_name('anc1');
 		assert.property(node, 'find_node_by_name');
-	    })
+	    });
+
+	    it("Finds nodes under collapsed nodes if deep argument is true", function () {
+		var newick_str = "((human, chimp)anc1, mouse)anc2";
+		var root = tnt_node(newick.parse_newick(newick_str));
+		root.toggle();
+		assert.isUndefined(root.find_node_by_name('human'));
+		assert.isDefined(root.find_node_by_name('human', true));
+		assert.equal(root.find_node_by_name('human', true).node_name(), "human");
+	    });
 	});
 
 	describe('find_all', function () {
@@ -241,7 +284,37 @@ describe ('TnT node', function () {
 		});
 		assert.strictEqual(tested, with_prop);
 		assert.strictEqual(with_prop, 5);
-	    })
+	    });
+	    
+	    it ("Does not apply to collapsed nodes by default", function () {
+		var newick_str = "((human, chimp)primates, (mouse, rat)rodents)mammals";
+		var root = tnt_node(newick.parse_newick(newick_str));
+		var primates = root.find_node_by_name("primates");
+		var human = root.find_node_by_name ("human");
+
+		primates.toggle();
+		root.apply(function (node) {
+		    node.property("__test__", 1)
+		});
+		assert.isDefined(human);
+		assert.isUndefined(human.property('__test__'));
+		assert.isDefined(primates.property('__test__'));
+	    });
+
+	    it ("Does apply to collapsed nodes if specified", function () {
+		var newick_str = "((human, chimp)primates, (mouse, rat)rodents)mammals";
+		var root = tnt_node(newick.parse_newick(newick_str));
+		var primates = root.find_node_by_name ('primates');
+		var human = root.find_node_by_name('human');
+
+		primates.toggle();
+		root.apply(function (node) {
+		    node.property("__test__", 1);
+		}, true); // deep
+		assert.isDefined(human);
+		assert.isDefined(primates.property('__test__'));
+		assert.isDefined(human.property('__test__'));
+	    });
 	});
 
 	describe('lca', function () {
@@ -269,6 +342,14 @@ describe ('TnT node', function () {
 		    }
 		});
 		assert.strictEqual(leaves, 3);
+	    });
+	    it("Does take into account collapsed nodes if specified", function () {
+		var newick_str = "((human, chimp)primates, (mouse, rat)rodents)mammals";
+		var root = tnt_node(newick.parse_newick(newick_str));
+		assert.isFalse(root.is_leaf());
+		root.toggle();
+		assert.isTrue(root.is_leaf());
+		assert.isFalse(root.is_leaf(true));
 	    });
 	});
 
@@ -365,6 +446,13 @@ describe ('TnT node', function () {
 		var children = node.children();
 		assert.isUndefined(children);
 	    });
+	    it("Returns collapsed children if deep argument is set", function () {
+		var newick_str = "((human, chimp)anc1, mouse)anc2";
+		var root = tnt_node(newick.parse_newick(newick_str));
+		root.toggle();
+		assert.isUndefined(root.children());
+		assert.lengthOf(root.children(true), 2);
+	    });
 	});
 
 	describe('upstream', function() {
@@ -399,18 +487,39 @@ describe ('TnT node', function () {
 	});
 
 	describe("get_all_nodes", function () {
-	    it("Returns all the nodes", function () {
+	    it ("Returns all the nodes", function () {
 		var nodes = mytree.get_all_nodes();
 		assert.isArray(nodes);
 		assert.lengthOf(nodes, 5);
 	    });
+	    it ("Does not return collapsed nodes by default", function () {
+		var newick_str = "((human, chimp)anc1, mouse)anc2";
+		var root = tnt_node(newick.parse_newick(newick_str));
+		root.toggle();
+		var all_nodes = root.get_all_nodes();
+		assert.lengthOf(all_nodes, 1);
+	    });
+	    it ("Does return collapsed nodes if the deep argument is set", function () {
+		var newick_str = "((human, chimp)anc1, mouse)anc2";
+		var root = tnt_node(newick.parse_newick(newick_str));
+		root.toggle();
+		assert.lengthOf(root.get_all_nodes(), 1);
+		assert.lengthOf(root.get_all_nodes(true), 5);
+	    });
 	});
 
 	describe("get_all_leaves", function () {
-	    it("Returns all the leaves", function () {
+	    it ("Returns all the leaves", function () {
 		var leaves = mytree.get_all_leaves();
 		assert.isArray(leaves);
 		assert.lengthOf(leaves, 3);
+	    });
+	    it ("Does not return collapsed leaves by default", function () {
+		var newick_str = "((human, chimp)anc1, mouse)anc2";
+		var root = tnt_node(newick.parse_newick(newick_str));
+		root.toggle();
+		assert.lengthOf(root.get_all_leaves(), 1);
+		assert.lengthOf(root.get_all_leaves(true), 3);
 	    });
 	});
 

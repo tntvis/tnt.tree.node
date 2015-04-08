@@ -6,4 +6,8 @@
 	- Bugfix: subtree recalculates branch lengths
 	- Bugfix: find_node now preserves "deep" argument when traversing the tree
 	- toggle now returns the same node the method applies to
+	- Added "deep" argument to apply, find_node_by_name, get_all_nodes and get_all_leaves (to recurse in collapsed nodes)
+	- Added "deep" argument to is_leaf (returns false if the node has children or collapsed children)
+	- Added "deep" argument to children (also returns collapsed children if set to true)
+	- Bugfix: fixed deep argument to find_node
 
