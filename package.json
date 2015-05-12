@@ -1,14 +1,14 @@
 {
   "name": "tnt.tree.node",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Tree data manipulation for TnT",
   "main": "index.js",
   "directories": {
     "test": "test"
   },
   "scripts": {
-      "test": "./node_modules/.bin/mocha --require blanket --reporter mocha-lcov-reporter > coverage/lcov.info && gulp test && gulp coveralls",
-      "prepublish": "gulp test & gulp build-browser"
+    "test": "./node_modules/.bin/mocha --require blanket --reporter mocha-lcov-reporter > coverage/lcov.info && gulp test && gulp coveralls",
+    "prepublish": "gulp test & gulp build-browser"
   },
   "repository": {
     "type": "git",
