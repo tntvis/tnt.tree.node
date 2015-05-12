@@ -374,16 +374,23 @@ var tnt_node = function (data) {
 	}
     });
 
-    api.method ('flatten', function () {
+    api.method ('flatten', function (preserve_internal) {
 	if (node.is_leaf()) {
 	    return node;
 	}
 	var data = node.data();
 	var newroot = copy_node(data);
-	var leaves = node.get_all_leaves();
+	var nodes;
+	if (preserve_internal) {
+	    nodes = node.get_all_nodes();
+	    nodes.shift(); // the self node is also included
+	} else {
+	    nodes = node.get_all_leaves();
+	}
 	newroot.children = [];
-	for (var i=0; i<leaves.length; i++) {
-	    newroot.children.push(copy_node(leaves[i].data()));
+	for (var i=0; i<nodes.length; i++) {
+	    delete (nodes[i].children);
+	    newroot.children.push(copy_node(nodes[i].data()));
 	}
 
 	return tnt_node(newroot);

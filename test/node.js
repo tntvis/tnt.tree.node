@@ -775,6 +775,22 @@ describe ('TnT node', function () {
 		var f = human.flatten();
 		assert.isUndefined(f.data().children);
 	    });
+	    it ("preserves the internal nodes when passed 'true'", function () {
+		var mytree = newick.parse_newick ("((human,chimp)anc1,mouse)anc2");
+		var flattened = tnt_node(mytree).flatten(true);
+		assert.equal(flattened.get_all_leaves().length, 4);
+		assert.equal(flattened.get_all_nodes().length, 5);
+		assert.isDefined(flattened.find_node_by_name("anc2"));
+		assert.isDefined(flattened.find_node_by_name("anc1"));
+		var children_names = [];
+		var children = flattened.children();
+		for (var i=0; i<children.length; i++) {
+		    children_names.push (children[i].node_name());
+		}
+		assert.include(children_names, "anc1");
+		assert.notInclude(children_names, "anc2");
+
+	    });
 	});
 
 

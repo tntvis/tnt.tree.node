@@ -11,3 +11,6 @@
 	- Added "deep" argument to children (also returns collapsed children if set to true)
 	- Bugfix: fixed deep argument to find_node
 
+0.0.4
+        - Fix gulp installation problem
+	- "flatten" accepts now a boolean parameter to keep the internal nodes
