@@ -62,7 +62,7 @@
     }
   },
   "dependencies": {
-    "tnt.api": "^0.0.0",
-    "tnt.utils": "^0.0.0"
+    "tnt.api": "0.0.1",
+    "tnt.utils": "0.0.1"
   }
 }
