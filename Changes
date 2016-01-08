@@ -17,3 +17,6 @@
 
 0.0.5
 	- updated dependencies
+0.1.0
+	- updated LICENSE
+	- removed coverage testing
