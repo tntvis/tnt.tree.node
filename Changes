@@ -20,3 +20,5 @@
 0.1.0
 	- updated LICENSE
 	- removed coverage testing
+0.1.1
+	- updated org name in package.json
